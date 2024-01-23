@@ -50,14 +50,23 @@ app.post('/api/notes', (request, response) => {
 
     const note = new Note({
         content: body.content,
-        important: true,
+        important: body.important || false,
         date: new Date()
     })
 
-    response.json(note)
+    note.save().then(saved => {
+        console.log('note saved!')
+        response.json(saved)
+    })
+        .catch(error => {
+            console.log('error', error)
+        })
+
+
 })
 
 
 app.listen(process.env.PORT, () => {
     console.log(`Server running on port ${process.env.PORT}  use ctrl+c to close server`)
+    console.log(`Api url: http://localhost:${process.env.PORT}  use ctrl+c to close server`)
 })
