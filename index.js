@@ -1,7 +1,8 @@
 const express = require('express')
 const morgan = require('morgan')
 const cors = require('cors')
-
+const mongoose = require('mongoose')
+const Note = require("./modules/Note")
 
 const app = express()
 
@@ -10,45 +11,19 @@ app.use(morgan_tiny)
 app.use(express.json())
 app.use(cors())
 
-let notes = [
-    {
-        id: 1,
-        content: "HTML is easy",
-        date: "2019-05-30T17:30:31.098Z",
-        important: true
-    },
-    {
-        id: 2,
-        content: "Browser can execute only Javascript",
-        date: "2019-05-30T18:39:34.091Z",
-        important: false
-    },
-    {
-        id: 3,
-        content: "GET and POST are the most important methods of HTTP protocol",
-        date: "2019-05-30T19:20:14.298Z",
-        important: true
-    }
-]
-
 app.get("/", (req, res) => {
     res.send('<h1>Notes Api</h1>')
 })
 
-app.get("/api/notes", (req, res) => {
-    res.json(notes)
+app.get("/api/notes", (req, response) => {
+    Note.find({}).then(notes => {
+        response.json(notes)
+    })
 })
 
 app.get('/api/notes/:id', (request, response) => {
-    const id = Number(request.params.id)
-    console.log(id)
-    const note = notes.find(note => note.id === id)
-    console.log(note)
-    if (note) {
-        response.json(note)
-    } else {
-        response.status(404).end()
-    }
+    const id = String(request.params.id)
+    response.json({ id: id })
 })
 
 app.delete('/api/notes/:id', (request, response) => {
@@ -67,26 +42,22 @@ const generateId = () => {
 
 app.post('/api/notes', (request, response) => {
     const body = request.body
-    if (!body.content) {
-        return response.status(400).json({
+    if (body.content === undefined) {
+        return response.status(404).json({
             error: 'content missing'
         })
     }
 
-    const note = {
+    const note = new Note({
         content: body.content,
-        important: body.important || false,
-        date: new Date(),
-        id: generateId()
-    }
-    notes = notes.concat(note)
-    //console.log(request.body)
+        important: true,
+        date: new Date()
+    })
 
     response.json(note)
 })
 
 
-const PORT = 3001
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}  use ctrl+c to close server`)
+app.listen(process.env.PORT, () => {
+    console.log(`Server running on port ${process.env.PORT}  use ctrl+c to close server`)
 })
