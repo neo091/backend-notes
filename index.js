@@ -14,7 +14,11 @@ app.use(express.json())
 app.use(cors())
 
 app.get("/", (req, res) => {
-    res.send('<h1>Notes Api</h1>')
+    const html = `
+    <h1>Notes Api</h1>
+    <a href="./api/notes">ALL</a>
+    `
+    res.send(html)
 })
 
 app.get("/api/notes", (req, response) => {
